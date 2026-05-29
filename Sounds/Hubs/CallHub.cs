@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Npgsql;
 using Sounds.Utilidades;
-
+using Microsoft.AspNetCore.Authorization;
 
 namespace Sounds.Hubs
 {
