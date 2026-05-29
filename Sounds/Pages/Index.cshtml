@@ -1,0 +1,592 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Inicio";
+}
+
+<div class="landing-shell">
+    <div class="landing-bg-orb orb-1"></div>
+    <div class="landing-bg-orb orb-2"></div>
+    <div class="landing-bg-grid"></div>
+
+    <main class="landing-container">
+        <section class="hero-block">
+            <span class="hero-badge">Plataforma de comunicación y organización</span>
+
+            <h1 class="hero-title">
+                Tu espacio de trabajo en un solo lugar
+            </h1>
+
+            <p class="hero-subtitle">
+                Centraliza equipos, conversaciones, planificación y notas en una única plataforma
+                diseñada para trabajar con más claridad, orden y fluidez.
+            </p>
+        </section>
+
+        <section class="modules-grid" aria-label="Accesos directos principales">
+            <a asp-page="/Grupos" class="module-card card-delay-1">
+                <div class="card-icon icon-groups">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M16 11c1.66 0 3-1.57 3-3.5S17.66 4 16 4s-3 1.57-3 3.5S14.34 11 16 11Zm-8 0c1.66 0 3-1.57 3-3.5S9.66 4 8 4 5 5.57 5 7.5 6.34 11 8 11Zm0 2c-2.67 0-8 1.34-8 4v1c0 .55.45 1 1 1h14c.55 0 1-.45 1-1v-1c0-2.66-5.33-4-8-4Zm8 0c-.29 0-.62.02-.97.05 1.37.84 2.97 2.08 2.97 3.95v1h5c.55 0 1-.45 1-1v-1c0-2.66-5.33-4-8-4Z" />
+                    </svg>
+                </div>
+
+                <div class="card-content">
+                    <div class="card-topline">Módulo principal</div>
+                    <h2>Grupos</h2>
+                    <p>
+                        Organiza equipos, áreas o proyectos en espacios estructurados
+                        para mantener la colaboración clara desde el primer momento.
+                    </p>
+                </div>
+
+                <div class="card-arrow">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M13.172 12 8.222 7.05l1.414-1.414L16 12l-6.364 6.364-1.414-1.414z" />
+                    </svg>
+                </div>
+            </a>
+
+            <a asp-page="/Chats" class="module-card card-delay-2">
+                <div class="card-icon icon-chats">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H8l-4 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm2 5h8v2H6V9Zm0 4h12v2H6v-2Zm10-4h2v2h-2V9Z" />
+                    </svg>
+                </div>
+
+                <div class="card-content">
+                    <div class="card-topline">Comunicación en tiempo real</div>
+                    <h2>Chats</h2>
+                    <p>
+                        Mantén conversaciones ágiles entre usuarios o equipos con un
+                        entorno pensado para comunicar rápido y trabajar mejor.
+                    </p>
+                </div>
+
+                <div class="card-arrow">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M13.172 12 8.222 7.05l1.414-1.414L16 12l-6.364 6.364-1.414-1.414z" />
+                    </svg>
+                </div>
+            </a>
+
+            <a asp-page="/Calendario" class="module-card card-delay-3">
+                <div class="card-icon icon-calendar">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M7 2h2v2h6V2h2v2h3a2 2 0 0 1 2 2v13a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2h3V2Zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9ZM4 8h16V6H4v2Zm3 4h4v4H7v-4Z" />
+                    </svg>
+                </div>
+
+                <div class="card-content">
+                    <div class="card-topline">Planificación y seguimiento</div>
+                    <h2>Calendario</h2>
+                    <p>
+                        Visualiza reuniones, tareas y fechas clave en una vista clara
+                        que ayude a coordinar el trabajo sin perder contexto.
+                    </p>
+                </div>
+
+                <div class="card-arrow">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M13.172 12 8.222 7.05l1.414-1.414L16 12l-6.364 6.364-1.414-1.414z" />
+                    </svg>
+                </div>
+            </a>
+
+            <a asp-page="/Notas" class="module-card card-delay-4">
+                <div class="card-icon icon-notes">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 3h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm8 1.5V9h4.5L14 4.5ZM8 12h8v2H8v-2Zm0 4h8v2H8v-2Zm0-8h4v2H8V8Z" />
+                    </svg>
+                </div>
+
+                <div class="card-content">
+                    <div class="card-topline">Ideas y documentación</div>
+                    <h2>Notas</h2>
+                    <p>
+                        Guarda apuntes, acuerdos, recordatorios y contenido importante
+                        en un espacio accesible y listo para consultar.
+                    </p>
+                </div>
+
+                <div class="card-arrow">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M13.172 12 8.222 7.05l1.414-1.414L16 12l-6.364 6.364-1.414-1.414z" />
+                    </svg>
+                </div>
+            </a>
+        </section>
+    </main>
+</div>
+
+<style>
+    :root {
+        --primary: #3B82F6;
+        --secondary: #6366F1;
+        --background: #F8FAFC;
+        --card: #FFFFFF;
+        --text: #0F172A;
+        --text-secondary: #64748B;
+        --success: #22C55E;
+        --warning: #F59E0B;
+        --error: #EF4444;
+        --border-soft: rgba(148, 163, 184, 0.18);
+        --shadow-soft: 0 12px 34px rgba(15, 23, 42, 0.07);
+        --shadow-hover: 0 18px 48px rgba(59, 130, 246, 0.14);
+        --radius-xl: 24px;
+        --radius-lg: 20px;
+        --radius-md: 16px;
+        --max-width: 1080px;
+    }
+
+    html, body {
+        background: var(--background);
+    }
+
+    body {
+        margin: 0;
+        color: var(--text);
+        font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+        overflow-x: hidden;
+    }
+
+    .landing-shell {
+        min-height: calc(100vh - 84px);
+        position: relative;
+        overflow: hidden;
+        background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 32%), radial-gradient(circle at top right, rgba(99, 102, 241, 0.11), transparent 28%), linear-gradient(180deg, #F8FAFC 0%, #F4F8FF 100%);
+    }
+
+    .landing-bg-orb {
+        position: absolute;
+        border-radius: 999px;
+        filter: blur(10px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .orb-1 {
+        width: 320px;
+        height: 320px;
+        top: -120px;
+        left: -100px;
+        background: radial-gradient(circle, rgba(59,130,246,.18) 0%, rgba(59,130,246,0) 70%);
+    }
+
+    .orb-2 {
+        width: 380px;
+        height: 380px;
+        right: -120px;
+        bottom: -140px;
+        background: radial-gradient(circle, rgba(99,102,241,.17) 0%, rgba(99,102,241,0) 72%);
+    }
+
+    .landing-bg-grid {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        opacity: 0.34;
+        pointer-events: none;
+        background-image: linear-gradient(rgba(148,163,184,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.07) 1px, transparent 1px);
+        background-size: 42px 42px;
+        mask-image: linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0.15));
+        -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0.15));
+    }
+
+    .landing-container {
+        position: relative;
+        z-index: 1;
+        max-width: var(--max-width);
+        min-height: calc(100vh - 84px);
+        margin: 0 auto;
+        padding: 24px 24px 22px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 24px;
+    }
+
+    .hero-block {
+        text-align: center;
+        max-width: 780px;
+        margin: 0 auto;
+        animation: fadeUp 0.9s ease-out both;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.72);
+        border: 1px solid rgba(59, 130, 246, 0.14);
+        color: var(--primary);
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+        backdrop-filter: blur(10px);
+    }
+
+    .hero-title {
+        margin: 16px 0 10px;
+        font-size: clamp(2.35rem, 4vw, 4rem);
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+        font-weight: 800;
+        color: var(--text);
+    }
+
+    .hero-subtitle {
+        margin: 0 auto;
+        max-width: 720px;
+        font-size: clamp(0.95rem, 1.35vw, 1.05rem);
+        line-height: 1.55;
+        color: var(--text-secondary);
+    }
+
+    .modules-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .module-card {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        min-height: 150px;
+        padding: 20px;
+        text-decoration: none;
+        color: inherit;
+        background: rgba(255,255,255,0.86);
+        border: 1px solid var(--border-soft);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-soft);
+        backdrop-filter: blur(14px);
+        overflow: hidden;
+        transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease, background 0.28s ease;
+        opacity: 0;
+        transform: translateY(22px);
+        animation: cardReveal 0.8s cubic-bezier(.22,1,.36,1) forwards;
+    }
+
+        .module-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(59,130,246,0.06), rgba(99,102,241,0.04) 55%, transparent 100%);
+            opacity: 1;
+            pointer-events: none;
+        }
+
+        .module-card::after {
+            content: "";
+            position: absolute;
+            inset: auto -60px -90px auto;
+            width: 160px;
+            height: 160px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(59,130,246,.12) 0%, rgba(59,130,246,0) 70%);
+            pointer-events: none;
+            transition: transform 0.35s ease, opacity 0.35s ease;
+            opacity: 0.9;
+        }
+
+        .module-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-hover);
+            border-color: rgba(99, 102, 241, 0.22);
+            background: rgba(255,255,255,0.96);
+        }
+
+            .module-card:hover::after {
+                transform: scale(1.08);
+                opacity: 1;
+            }
+
+            .module-card:hover .card-arrow {
+                transform: translateX(4px);
+                color: var(--secondary);
+            }
+
+            .module-card:hover .card-icon {
+                transform: scale(1.05);
+                box-shadow: 0 10px 24px rgba(59,130,246,0.18);
+            }
+
+    .card-icon,
+    .card-content,
+    .card-arrow {
+        position: relative;
+        z-index: 1;
+    }
+
+    .card-icon {
+        flex: 0 0 52px;
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.28s ease, box-shadow 0.28s ease;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.10);
+    }
+
+        .card-icon svg {
+            width: 26px;
+            height: 26px;
+            fill: white;
+        }
+
+    .icon-groups {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    .icon-chats {
+        background: linear-gradient(135deg, #4F8EF7, #6366F1);
+    }
+
+    .icon-calendar {
+        background: linear-gradient(135deg, #3B82F6, #22C55E);
+    }
+
+    .icon-notes {
+        background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    }
+
+    .card-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .card-topline {
+        margin-bottom: 6px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--primary);
+    }
+
+    .card-content h2 {
+        margin: 0 0 6px;
+        font-size: 1.35rem;
+        line-height: 1.15;
+        font-weight: 800;
+        color: var(--text);
+    }
+
+    .card-content p {
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.48;
+        color: var(--text-secondary);
+        max-width: 42ch;
+    }
+
+    .card-arrow {
+        align-self: center;
+        flex: 0 0 auto;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #94A3B8;
+        background: rgba(248, 250, 252, 0.95);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        transition: transform 0.28s ease, color 0.28s ease, border-color 0.28s ease;
+    }
+
+        .card-arrow svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+    .card-delay-1 {
+        animation-delay: 0.10s;
+    }
+
+    .card-delay-2 {
+        animation-delay: 0.22s;
+    }
+
+    .card-delay-3 {
+        animation-delay: 0.34s;
+    }
+
+    .card-delay-4 {
+        animation-delay: 0.46s;
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes cardReveal {
+        from {
+            opacity: 0;
+            transform: translateY(24px) scale(0.985);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @@media (max-height: 850px) {
+        .landing-container {
+            padding-top: 18px;
+            padding-bottom: 18px;
+            gap: 18px;
+        }
+
+        .hero-title {
+            font-size: clamp(2.1rem, 3.5vw, 3.5rem);
+            margin-top: 12px;
+            margin-bottom: 8px;
+        }
+
+        .hero-subtitle {
+            font-size: 0.92rem;
+            line-height: 1.45;
+        }
+
+        .module-card {
+            min-height: 135px;
+            padding: 17px;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            flex-basis: 48px;
+        }
+
+        .card-content h2 {
+            font-size: 1.22rem;
+        }
+
+        .card-content p {
+            font-size: 0.84rem;
+            line-height: 1.42;
+        }
+    }
+
+    @@media (max-width: 991.98px) {
+        .landing-container {
+            padding-top: 28px;
+            padding-bottom: 28px;
+            gap: 24px;
+        }
+
+        .modules-grid {
+            max-width: 860px;
+            gap: 16px;
+        }
+
+        .module-card {
+            min-height: 145px;
+            padding: 18px;
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .landing-shell {
+            min-height: 100dvh;
+            overflow: visible;
+        }
+
+        .landing-container {
+            min-height: auto;
+            padding: 28px 18px 28px;
+        }
+
+        .hero-badge {
+            font-size: 0.78rem;
+            padding: 8px 12px;
+        }
+
+        .hero-title {
+            margin-top: 16px;
+            margin-bottom: 10px;
+        }
+
+        .hero-subtitle {
+            font-size: 0.94rem;
+            line-height: 1.55;
+        }
+
+        .modules-grid {
+            grid-template-columns: 1fr;
+            gap: 14px;
+            max-width: 620px;
+        }
+
+        .module-card {
+            min-height: unset;
+            padding: 18px;
+            gap: 14px;
+            border-radius: 22px;
+        }
+
+        .card-icon {
+            width: 52px;
+            height: 52px;
+            flex-basis: 52px;
+            border-radius: 16px;
+        }
+
+            .card-icon svg {
+                width: 25px;
+                height: 25px;
+            }
+
+        .card-content h2 {
+            font-size: 1.25rem;
+        }
+
+        .card-content p {
+            font-size: 0.9rem;
+            max-width: none;
+        }
+
+        .card-arrow {
+            width: 32px;
+            height: 32px;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .hero-block,
+        .module-card {
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+
+        .module-card,
+        .card-icon,
+        .card-arrow {
+            transition: none !important;
+        }
+    }
+</style>

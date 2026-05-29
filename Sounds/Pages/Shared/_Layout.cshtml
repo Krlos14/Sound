@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Sounds</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Sounds.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout-saas.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="app-shell">
+        <header class="app-header">
+            <nav class="navbar navbar-expand-lg app-navbar">
+                <div class="container-fluid app-container">
+                    <a class="navbar-brand app-brand" asp-page="/Index">
+                        <span class="app-brand-mark">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 2 3 7l9 5 9-5-9-5Zm-9 8 9 5 9-5v7l-9 5-9-5v-7Z"></path>
+                            </svg>
+                        </span>
+                        <span class="app-brand-text">
+                            <span class="brand-title">Sounds</span>
+                            <span class="brand-subtitle">Workspace Suite</span>
+                        </span>
+                    </a>
+
+                    <button class="navbar-toggler app-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                            aria-controls="mainNavbar" aria-expanded="false" aria-label="Abrir navegación">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="mainNavbar">
+                        <ul class="navbar-nav mx-auto app-nav-list">
+                            <li class="nav-item">
+                                <a class="nav-link app-nav-link" asp-page="/Grupos">Grupos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link app-nav-link" asp-page="/Chats">Chats</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link app-nav-link" asp-page="/Calendario">Calendario</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link app-nav-link" asp-page="/Notas">Notas</a>
+                            </li>
+                        </ul>
+
+                        <div class="app-nav-actions">
+                            <partial name="_LoginPartial" />
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main class="app-main">
+            <div class="app-page-wrap">
+                @RenderBody()
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <div class="container-fluid app-container footer-inner">
+                <div class="footer-left">
+                    <span class="footer-brand">Sounds</span>
+                    <span class="footer-separator">•</span>
+                    <span class="footer-text">Plataforma de comunicación y organización</span>
+                </div>
+
+                <div class="footer-right">
+                    <span class="footer-text">© @DateTime.Now.Year</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

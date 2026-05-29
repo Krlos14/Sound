@@ -1,0 +1,2105 @@
+﻿@page
+@model Sounds.Pages.ChatsModel
+
+<div class="chats-shell">
+
+    <!-- SIDEBAR IZQUIERDA: Lista de grupos -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-title">Chats</span>
+        </div>
+
+        <div class="groups-list" id="gruposList">
+            <div class="groups-loading">Cargando...</div>
+        </div>
+
+        <div class="sidebar-footer-btn">
+            <button class="translate-btn" type="button">
+                <svg viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.516 17.516 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17A15.9 15.9 0 0 1 9.5 10.58 15.91 15.91 0 0 1 7.74 8H5.74a17.502 17.502 0 0 0 2.6 3.53L3 16.9 4.41 18.3 9.5 13.22l3.16 3.16.21-.21zM18.5 10h-2l-4.5 12h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.63 7l1.63-4.33L19.13 17h-3.26z" /></svg>
+                <span class="translate-label">Traducción en tiempo real<small>Próximamente</small></span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- PANEL PRINCIPAL -->
+    <main class="main-panel">
+
+        <!-- Estado vacío -->
+        <div class="empty-state" id="emptyState">
+            <div class="empty-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5.3-3a5.3 5.3 0 0 1-10.6 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-1.7z" /></svg>
+            </div>
+            <h2>Selecciona un grupo</h2>
+            <p>Elige un grupo de la izquierda para entrar en llamada y chat.</p>
+        </div>
+
+        <!-- Sala activa -->
+        <div class="room-wrap" id="roomWrap" style="display:none;">
+
+            <!-- Header del grupo activo -->
+            <div class="room-header">
+                <div class="room-header-left">
+                    <div class="room-avatar" id="roomAvatar">?</div>
+                    <div>
+                        <div class="room-name" id="roomName">Grupo</div>
+                        <div class="room-status" id="roomStatus">Conectando...</div>
+                    </div>
+                </div>
+                <div class="live-badge"><span class="live-dot"></span>En directo</div>
+            </div>
+
+            <div class="room-body">
+
+                <!-- Área de video/participantes -->
+                <div class="video-area" id="videoArea">
+
+                    <!--
+                        VISTA AMPLIADA: se muestra cuando el usuario hace click en un tile con vídeo.
+                        Contiene el vídeo principal (grande) y una barra lateral con el resto de tiles.
+                    -->
+                    <div class="expanded-view" id="expandedView" style="display:none;">
+                        <!-- Vídeo/pantalla ampliada -->
+                        <div class="expanded-main" id="expandedMain">
+                            <video id="expandedVideo" autoplay playsinline></video>
+                            <div class="expanded-label" id="expandedLabel">Usuario</div>
+
+                            <!-- Botón pantalla completa -->
+                            <button class="btn-fullscreen" id="btnFullscreen" title="Pantalla completa" onclick="enterFullscreen()">
+                                <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" /></svg>
+                                Pantalla completa
+                            </button>
+
+                            <!-- Botón cerrar vista ampliada -->
+                            <button class="btn-collapse" id="btnCollapse" title="Cerrar vista ampliada" onclick="collapseExpandedView()">
+                                <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>
+                            </button>
+                        </div>
+
+                        <!-- Tira lateral con el resto de participantes -->
+                        <div class="expanded-sidebar" id="expandedSidebar">
+                            <!-- Se rellena dinámicamente con miniaturas -->
+                        </div>
+                    </div>
+
+                    <!-- Grid normal de participantes (visible cuando NO hay vista ampliada) -->
+                    <div class="participants-grid" id="participantsGrid">
+                        <!-- Se genera dinámicamente -->
+                    </div>
+
+                    <!-- Pantalla compartida remota (overlay cuando no hay vista ampliada) -->
+                    <div class="screen-share-area" id="screenShareArea" style="display:none;">
+                        <video id="screenShareVideo" autoplay playsinline></video>
+                        <div class="screen-share-label" id="screenShareLabel">Pantalla compartida</div>
+                    </div>
+                </div>
+
+                <!-- Panel de chat -->
+                <div class="chat-panel">
+                    <div class="chat-panel-header">
+                        <span class="chat-panel-title">Chat del grupo</span>
+                        <span class="chat-dot-status"><span class="cdot"></span>Conectado</span>
+                    </div>
+                    <div class="chat-messages" id="chatMessages"></div>
+                    <div class="chat-input-row">
+                        <input id="chatInput" type="text" placeholder="Escribe un mensaje…" maxlength="500" autocomplete="off" />
+                        <button id="btnSend" type="button">
+                            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Barra de controles -->
+            <div class="controls-bar">
+                <button id="btnMute" class="ctrl-btn" title="Micrófono">
+                    <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5.3-3a5.3 5.3 0 0 1-10.6 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-1.7z" /></svg>
+                    <span>Micro</span>
+                </button>
+
+                <button id="btnDeafen" class="ctrl-btn" title="Sonido">
+                    <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z" /></svg>
+                    <span>Sonido</span>
+                </button>
+
+                <button id="btnHangup" class="ctrl-btn ctrl-danger" title="Colgar">
+                    <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.15 6.59 6.59l2.2-2.2c.28-.28.67-.36 1.02-.25 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" /></svg>
+                    <span>Colgar</span>
+                </button>
+
+                <button id="btnCamera" class="ctrl-btn" title="Cámara">
+                    <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" /></svg>
+                    <span>Cámara</span>
+                </button>
+
+                <button id="btnScreen" class="ctrl-btn" title="Compartir pantalla">
+                    <svg viewBox="0 0 24 24"><path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zm-9-1v-2H4V6h16v10h-9z" /></svg>
+                    <span>Pantalla</span>
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <audio id="remoteAudio" autoplay style="display:none;"></audio>
+</div>
+
+<style>
+    :root {
+        --bg: #0d1117;
+        --bg2: #161b22;
+        --bg3: #1c2128;
+        --side: #13171e;
+        --border: rgba(255,255,255,0.06);
+        --accent: #3B82F6;
+        --accent2: #6366F1;
+        --text: #e6edf3;
+        --text2: #8b949e;
+        --success: #22C55E;
+        --danger: #EF4444;
+        --radius: 12px;
+    }
+
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        height: 100%;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+    }
+
+    .app-main,
+    .app-page-wrap {
+        width: 100% !important;
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .chats-shell {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+        background: var(--bg);
+    }
+
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        width: 300px;
+        min-width: 300px;
+        max-width: 300px;
+        background: var(--side);
+        border-right: 1px solid var(--border);
+        overflow: hidden;
+    }
+
+    .sidebar-header {
+        padding: 16px 18px 12px;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+
+    .sidebar-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text);
+        letter-spacing: -0.01em;
+    }
+
+    .groups-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+        .groups-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .groups-list::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.08);
+            border-radius: 4px;
+        }
+
+    .group-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        user-select: none;
+    }
+
+        .group-item:hover {
+            background: rgba(255,255,255,0.06);
+        }
+
+        .group-item.active {
+            background: rgba(59,130,246,0.15);
+        }
+
+    .group-av {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #fff;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .group-item.active .group-av {
+        box-shadow: 0 0 0 2px var(--accent);
+    }
+
+    .group-info {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .group-iname {
+        font-weight: 600;
+        color: var(--text);
+        font-size: 0.92rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .group-icode {
+        color: var(--text2);
+        font-size: 0.78rem;
+        margin-top: 2px;
+    }
+
+    .group-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--success);
+        flex-shrink: 0;
+        box-shadow: 0 0 0 3px rgba(34,197,94,0.15);
+    }
+
+    .groups-loading {
+        padding: 20px;
+        text-align: center;
+        color: var(--text2);
+    }
+
+    .sidebar-footer-btn {
+        padding: 12px;
+        border-top: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+
+    .translate-btn {
+        width: 100%;
+        background: rgba(59,130,246,0.08);
+        border: 1px solid rgba(59,130,246,0.14);
+        border-radius: 10px;
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text2);
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+        .translate-btn:hover {
+            background: rgba(59,130,246,0.14);
+        }
+
+        .translate-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: var(--accent);
+            flex-shrink: 0;
+        }
+
+    .translate-label {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+        .translate-label small {
+            font-weight: 400;
+            color: var(--text2);
+            font-size: 0.72rem;
+        }
+
+    .main-panel {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: var(--bg);
+        position: relative;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .empty-state {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        color: var(--text2);
+        padding: 40px;
+        text-align: center;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 24px;
+        background: rgba(59,130,246,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .empty-icon svg {
+            width: 36px;
+            height: 36px;
+            fill: var(--accent);
+        }
+
+    .empty-state h2 {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--text);
+    }
+
+    .empty-state p {
+        max-width: 300px;
+        line-height: 1.6;
+    }
+
+    .room-wrap {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        min-height: 0;
+        min-width: 0;
+    }
+
+    .room-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg2);
+        flex-shrink: 0;
+        min-height: 58px;
+    }
+
+    .room-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .room-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #fff;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .room-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .room-status {
+        font-size: 0.75rem;
+        color: var(--text2);
+        margin-top: 2px;
+    }
+
+    .live-badge {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(34,197,94,0.1);
+        border: 1px solid rgba(34,197,94,0.2);
+        border-radius: 999px;
+        padding: 5px 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #22C55E;
+        flex-shrink: 0;
+    }
+
+    .live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
+        }
+
+        50% {
+            box-shadow: 0 0 0 6px rgba(34,197,94,0.08);
+        }
+    }
+
+    .room-body {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        overflow: hidden;
+    }
+
+    .video-area {
+        position: relative;
+        background: var(--bg);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: stretch;
+        padding: 14px;
+        min-width: 0;
+        min-height: 0;
+    }
+
+    .expanded-view {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        gap: 8px;
+    }
+
+    .expanded-main {
+        flex: 1;
+        position: relative;
+        background: #000;
+        border-radius: 16px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 0;
+    }
+
+        .expanded-main video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+    .expanded-label {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        background: rgba(0,0,0,0.7);
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 999px;
+        backdrop-filter: blur(6px);
+        pointer-events: none;
+    }
+
+    .btn-fullscreen {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(59,130,246,0.85);
+        border: none;
+        border-radius: 8px;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 7px 12px;
+        cursor: pointer;
+        backdrop-filter: blur(6px);
+        transition: background 0.15s, transform 0.1s;
+        z-index: 5;
+    }
+
+        .btn-fullscreen svg {
+            width: 16px;
+            height: 16px;
+            fill: #fff;
+            flex-shrink: 0;
+        }
+
+        .btn-fullscreen:hover {
+            background: rgba(37,99,235,0.95);
+            transform: scale(1.04);
+        }
+
+    .btn-collapse {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 30px;
+        height: 30px;
+        background: rgba(0,0,0,0.6);
+        border: none;
+        border-radius: 50%;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        backdrop-filter: blur(6px);
+        transition: background 0.15s;
+        z-index: 5;
+        padding: 0;
+    }
+
+        .btn-collapse svg {
+            width: 16px;
+            height: 16px;
+            fill: #fff;
+        }
+
+        .btn-collapse:hover {
+            background: rgba(239,68,68,0.7);
+        }
+
+    .expanded-sidebar {
+        width: 120px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        overflow-y: auto;
+        padding-right: 2px;
+    }
+
+        .expanded-sidebar::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .expanded-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+
+    .mini-tile {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--bg3);
+        border: 1.5px solid var(--border);
+        aspect-ratio: 16/9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: border-color 0.15s, transform 0.1s;
+    }
+
+        .mini-tile:hover {
+            border-color: var(--accent);
+            transform: scale(1.03);
+        }
+
+        .mini-tile.is-active-expanded {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.35);
+        }
+
+        .mini-tile video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .mini-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #fff;
+    }
+
+    .mini-name {
+        position: absolute;
+        bottom: 4px;
+        left: 4px;
+        right: 4px;
+        background: rgba(0,0,0,0.65);
+        color: #fff;
+        font-size: 0.62rem;
+        font-weight: 700;
+        padding: 2px 5px;
+        border-radius: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        backdrop-filter: blur(4px);
+    }
+
+    .participants-grid {
+        flex: 1;
+        width: 100%;
+        height: 100%;
+        display: grid;
+        gap: 12px;
+        padding: 0;
+        overflow-y: auto;
+        min-height: 0;
+    }
+
+        .participants-grid::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .participants-grid::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.08);
+            border-radius: 4px;
+        }
+
+        .participants-grid.count-1 {
+            grid-template-columns: minmax(0, 1fr);
+            align-content: center;
+            justify-content: center;
+        }
+
+        .participants-grid.count-2,
+        .participants-grid.count-3,
+        .participants-grid.count-4 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-content: center;
+        }
+
+        .participants-grid.count-many {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            align-content: start;
+        }
+
+    .peer-tile {
+        position: relative;
+        border-radius: 18px;
+        overflow: hidden;
+        background: var(--bg3);
+        border: 1.5px solid var(--border);
+        aspect-ratio: 16/9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-color 0.2s, transform 0.15s;
+        min-height: 180px;
+        width: 100%;
+    }
+
+    .participants-grid.count-1 .peer-tile {
+        width: min(100%, 980px);
+        margin: 0 auto;
+        min-height: 320px;
+    }
+
+    .peer-tile.has-video,
+    .peer-tile.has-screen {
+        cursor: pointer;
+    }
+
+        .peer-tile.has-video:hover,
+        .peer-tile.has-screen:hover {
+            border-color: var(--accent);
+            transform: scale(1.01);
+        }
+
+    .peer-tile.is-me {
+        border-color: rgba(59,130,246,0.4);
+    }
+
+    .peer-tile.speaking {
+        border-color: var(--success) !important;
+        box-shadow: 0 0 0 2px rgba(34,197,94,0.25);
+    }
+
+    .peer-tile.has-video::after,
+    .peer-tile.has-screen::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(59,130,246,0.0);
+        transition: background 0.15s;
+        pointer-events: none;
+        border-radius: inherit;
+    }
+
+    .peer-tile.has-video:hover::after,
+    .peer-tile.has-screen:hover::after {
+        background: rgba(59,130,246,0.08);
+    }
+
+    .peer-tile-expand-hint {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: rgba(0,0,0,0.6);
+        border-radius: 6px;
+        padding: 4px 6px;
+        font-size: 0.62rem;
+        color: #fff;
+        font-weight: 600;
+        opacity: 0;
+        transition: opacity 0.15s;
+        pointer-events: none;
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+        .peer-tile-expand-hint svg {
+            width: 10px;
+            height: 10px;
+            fill: #fff;
+        }
+
+    .peer-tile.has-video:hover .peer-tile-expand-hint,
+    .peer-tile.has-screen:hover .peer-tile-expand-hint {
+        opacity: 1;
+    }
+
+    .peer-avatar-big {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #fff;
+        box-shadow: 0 8px 24px rgba(59,130,246,0.3);
+        flex-shrink: 0;
+    }
+
+    .peer-tile video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+    }
+
+    .peer-tile.has-video video {
+        display: block;
+    }
+
+    .peer-name-label {
+        position: absolute;
+        bottom: 8px;
+        left: 8px;
+        background: rgba(0,0,0,0.65);
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 999px;
+        backdrop-filter: blur(6px);
+    }
+
+    .peer-icons {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        display: flex;
+        gap: 4px;
+    }
+
+    .peer-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.65rem;
+    }
+
+    .screen-share-area {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        background: #000;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .screen-share-area video {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+    .screen-share-label {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.7);
+        color: #fff;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 5px 14px;
+        border-radius: 999px;
+        backdrop-filter: blur(6px);
+    }
+
+    .chat-panel {
+        display: flex;
+        flex-direction: column;
+        width: 320px;
+        min-width: 320px;
+        max-width: 320px;
+        border-left: 1px solid var(--border);
+        background: var(--bg2);
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    .chat-panel-header {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+    }
+
+    .chat-panel-title {
+        font-weight: 700;
+        font-size: 0.88rem;
+    }
+
+    .chat-dot-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        color: var(--text2);
+    }
+
+    .cdot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--success);
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 0;
+    }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.08);
+            border-radius: 4px;
+        }
+
+    .msg-row {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+    }
+
+    .msg-av {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #fff;
+        font-size: 0.7rem;
+        flex-shrink: 0;
+    }
+
+    .msg-bubble {
+        max-width: 82%;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 8px 10px;
+    }
+
+    .msg-meta {
+        display: flex;
+        gap: 6px;
+        align-items: baseline;
+        margin-bottom: 3px;
+    }
+
+    .msg-user {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--accent);
+    }
+
+    .msg-time {
+        font-size: 0.68rem;
+        color: var(--text2);
+    }
+
+    .msg-text {
+        font-size: 0.85rem;
+        color: var(--text);
+        word-break: break-word;
+        white-space: pre-wrap;
+        line-height: 1.5;
+    }
+
+    .msg-system {
+        align-self: center;
+        font-size: 0.72rem;
+        color: var(--text2);
+        background: rgba(255,255,255,0.04);
+        border: 1px dashed rgba(255,255,255,0.08);
+        padding: 4px 10px;
+        border-radius: 999px;
+    }
+
+    .chat-input-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 10px 12px;
+        border-top: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+
+        .chat-input-row input {
+            flex: 1;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 12px;
+            color: var(--text);
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.15s;
+            min-width: 0;
+        }
+
+            .chat-input-row input:focus {
+                border-color: rgba(59,130,246,0.45);
+            }
+
+            .chat-input-row input::placeholder {
+                color: var(--text2);
+            }
+
+    #btnSend {
+        width: 34px;
+        height: 34px;
+        background: var(--accent);
+        border: none;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 0.15s, transform 0.1s;
+    }
+
+        #btnSend:hover {
+            background: #2563EB;
+            transform: scale(1.05);
+        }
+
+        #btnSend svg {
+            width: 16px;
+            height: 16px;
+            fill: #fff;
+        }
+
+    .controls-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px 16px;
+        background: var(--bg2);
+        border-top: 1px solid var(--border);
+        flex-shrink: 0;
+        flex-wrap: wrap;
+    }
+
+    .ctrl-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        min-width: 68px;
+        padding: 8px 12px;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text2);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        font-size: 0.72rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+        .ctrl-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(255,255,255,0.08);
+            color: var(--text);
+            border-color: rgba(255,255,255,0.12);
+        }
+
+        .ctrl-btn.active {
+            background: rgba(59,130,246,0.18);
+            color: var(--accent);
+            border-color: rgba(59,130,246,0.35);
+        }
+
+        .ctrl-btn.muted {
+            background: rgba(239,68,68,0.12);
+            color: var(--danger);
+            border-color: rgba(239,68,68,0.3);
+        }
+
+    .ctrl-danger {
+        background: rgba(239,68,68,0.14);
+        color: var(--danger);
+        border-color: rgba(239,68,68,0.3);
+    }
+
+        .ctrl-danger:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+    @@media (max-width: 1200px) {
+        .chats-shell {
+            grid-template-columns: 270px minmax(0, 1fr);
+        }
+
+        .sidebar {
+            width: 270px;
+            min-width: 270px;
+            max-width: 270px;
+        }
+
+        .room-body {
+            grid-template-columns: minmax(0, 1fr) 300px;
+        }
+
+        .chat-panel {
+            width: 300px;
+            min-width: 300px;
+            max-width: 300px;
+        }
+    }
+
+    @@media (max-width: 900px) {
+        .chats-shell {
+            grid-template-columns: 230px minmax(0, 1fr);
+        }
+
+        .sidebar {
+            width: 230px;
+            min-width: 230px;
+            max-width: 230px;
+        }
+
+        .room-body {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr auto;
+        }
+
+        .chat-panel {
+            width: 100%;
+            min-width: 100%;
+            max-width: 100%;
+            max-height: 220px;
+            border-left: none;
+            border-top: 1px solid var(--border);
+        }
+
+        .expanded-sidebar {
+            width: 100px;
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .chats-shell {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+            display: none;
+        }
+
+        .controls-bar {
+            gap: 6px;
+            padding: 8px 10px;
+        }
+
+        .ctrl-btn {
+            min-width: 54px;
+            padding: 6px 8px;
+            font-size: 0.66rem;
+        }
+
+        .expanded-sidebar {
+            width: 80px;
+        }
+
+        .btn-fullscreen span {
+            display: none;
+        }
+
+        .btn-fullscreen {
+            padding: 7px;
+        }
+    }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+<script>
+    // ================================================================
+    //  SOUNDS — Chats con WebRTC mesh + SignalR
+    // ================================================================
+
+    const ME = "@(User.Identity?.Name ?? "Yo")";
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/callhub")
+        .withAutomaticReconnect()
+        .build();
+
+    const ICE = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+
+    // ── Estado global ──
+    let currentGroup   = null;
+    let currentGroupName = "";
+    let localStream    = null;
+    let cameraStream   = null;
+    let screenStream   = null;
+    let micMuted       = false;
+    let deafened       = false;
+    let cameraOn       = false;
+    let screenSharing  = false;
+
+    // expandedState = { connId, type } donde type = 'camera' | 'screen'
+    let expandedState  = null;
+
+    // Mapa de peers: connId → { pc, username, audioEl, videoStream, screenStream }
+    const peers = {};
+
+    // ================================================================
+    //  CARGA DE GRUPOS
+    // ================================================================
+    async function loadGroups() {
+        try {
+            const res = await fetch('/api/grupos');
+            if (!res.ok) return;
+            const grupos = await res.json();
+            renderGroups(grupos);
+        } catch (e) { console.error(e); }
+    }
+
+    function renderGroups(grupos) {
+        const list = document.getElementById('gruposList');
+        if (!grupos.length) {
+            list.innerHTML = '<div class="groups-loading">Sin grupos. Ve a Grupos para crear uno.</div>';
+            return;
+        }
+        list.innerHTML = grupos.map(g => `
+            <div class="group-item" data-code="${esc(g.code)}" data-name="${esc(g.name)}" onclick="selectGroup(this)">
+                <div class="group-av">${(g.name||'G')[0].toUpperCase()}</div>
+                <div class="group-info">
+                    <div class="group-iname">${esc(g.name)}</div>
+                    <div class="group-icode">Código: ${esc(g.code)}</div>
+                </div>
+                <div class="group-dot"></div>
+            </div>
+        `).join('');
+    }
+
+    async function selectGroup(el) {
+        const code = el.dataset.code;
+        const name = el.dataset.name;
+        if (currentGroup === code) return;
+        document.querySelectorAll('.group-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        await switchGroup(code, name);
+    }
+
+    // ================================================================
+    //  SWITCH DE GRUPO
+    // ================================================================
+    async function switchGroup(code, name) {
+        if (currentGroup) {
+            await connection.invoke('LeaveCall', currentGroup).catch(() => {});
+            stopAllMedia();
+            destroyAllPeers();
+        }
+
+        currentGroup     = code;
+        currentGroupName = name;
+
+        document.getElementById('emptyState').style.display  = 'none';
+        document.getElementById('roomWrap').style.display    = 'flex';
+        document.getElementById('roomAvatar').textContent    = (name||'G')[0].toUpperCase();
+        document.getElementById('roomName').textContent      = name;
+        document.getElementById('roomStatus').textContent    = 'Conectando...';
+
+        collapseExpandedView();
+        clearParticipantsGrid();
+        clearChat();
+
+        addOrUpdateTile('__me__', ME, true);
+
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            micMuted = false;
+            updateMicBtn();
+            await connection.invoke('JoinCall', code);
+            document.getElementById('roomStatus').textContent = 'Conectado';
+            const history = await connection.invoke('GetChatHistory', code, 50);
+            history.forEach(m => appendMessage(m));
+        } catch (e) {
+            appendSystemMsg('⚠️ No se pudo acceder al micrófono: ' + e.message);
+            await connection.invoke('JoinCall', code).catch(() => {});
+            document.getElementById('roomStatus').textContent = 'Conectado (sin audio)';
+            const history = await connection.invoke('GetChatHistory', code, 50).catch(() => []);
+            history.forEach(m => appendMessage(m));
+        }
+    }
+
+    // ================================================================
+    //  SIGNALR EVENTOS
+    // ================================================================
+
+    connection.on('ExistingPeers', async (peers_list) => {
+        for (const peer of peers_list) {
+            addOrUpdateTile(peer.connId, peer.username, false);
+            await createPeerAndOffer(peer.connId, peer.username);
+        }
+    });
+
+    connection.on('PeerJoined', ({ connId, username }) => {
+        addOrUpdateTile(connId, username, false);
+        appendSystemMsg(`${username} se ha unido.`);
+    });
+
+    connection.on('ReceiveOffer', async (fromConnId, fromUsername, offerJson) => {
+        addOrUpdateTile(fromConnId, fromUsername, false);
+        const pc = getOrCreatePC(fromConnId, fromUsername);
+        await pc.setRemoteDescription(JSON.parse(offerJson));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        await connection.invoke('SendAnswer', fromConnId, JSON.stringify(answer));
+    });
+
+    connection.on('PeerLeft', (connId) => {
+        const peer = peers[connId];
+        if (peer) {
+            if (expandedState && expandedState.connId === connId) {
+                collapseExpandedView();
+            }
+            peer.pc.close();
+            removeTile(connId);
+            removeMiniTile(connId);
+            appendSystemMsg(`${peer.username} ha salido.`);
+            delete peers[connId];
+        }
+    });
+
+    connection.on('CallUsersUpdated', (usernames) => { /* gestionado via tiles */ });
+
+    connection.on('ReceiveAnswer', async (fromConnId, answerJson) => {
+        const entry = peers[fromConnId];
+        if (!entry) return;
+        await entry.pc.setRemoteDescription(JSON.parse(answerJson));
+    });
+
+    connection.on('ReceiveIceCandidate', async (fromConnId, candJson) => {
+        const entry = peers[fromConnId];
+        if (!entry) return;
+        try { await entry.pc.addIceCandidate(JSON.parse(candJson)); } catch {}
+    });
+
+    connection.on('ReceiveMessage', (msg) => appendMessage(msg));
+
+    // ================================================================
+    //  WEBRTC
+    // ================================================================
+
+    async function createPeerAndOffer(targetConnId, username) {
+        const pc = getOrCreatePC(targetConnId, username);
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        await connection.invoke('SendOffer', targetConnId, JSON.stringify(offer));
+    }
+
+    function getOrCreatePC(connId, username) {
+        if (peers[connId]) return peers[connId].pc;
+
+        const pc = new RTCPeerConnection(ICE);
+
+        if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+        if (cameraStream) cameraStream.getTracks().forEach(t => pc.addTrack(t, cameraStream));
+        if (screenStream) screenStream.getTracks().forEach(t => pc.addTrack(t, screenStream));
+
+        pc.onicecandidate = (ev) => {
+            if (ev.candidate)
+                connection.invoke('SendIceCandidate', connId, JSON.stringify(ev.candidate)).catch(() => {});
+        };
+
+        pc.ontrack = (ev) => {
+            const stream = ev.streams[0];
+            const track  = ev.track;
+
+            if (track.kind === 'audio') {
+                const audio = new Audio();
+                audio.srcObject = stream;
+                audio.autoplay  = true;
+                if (deafened) audio.muted = true;
+                peers[connId].audioEl = audio;
+            }
+
+            if (track.kind === 'video') {
+                const isScreen = track.label.toLowerCase().includes('screen') ||
+                                 track.label.toLowerCase().includes('display') ||
+                                 track.label.toLowerCase().includes('monitor') ||
+                                 (ev.streams.length > 1);
+
+                if (isScreen) {
+                    peers[connId].screenStream = stream;
+                    const tile = document.getElementById('tile-' + connId);
+                    if (tile) tile.classList.add('has-screen');
+
+                    // Detectar cuando el peer deja de compartir pantalla
+                    track.addEventListener('ended', () => {
+                        onRemotePeerStopsScreen(connId);
+                    });
+
+                    if (!expandedState) {
+                        showRemoteScreenOverlay(stream, peers[connId]?.username || username);
+                    }
+                } else {
+                    peers[connId].videoStream = stream;
+                    attachVideoToTile(connId, stream);
+
+                    // Detectar cuando el peer apaga la cámara
+                    track.addEventListener('ended', () => {
+                        onRemotePeerStopsCamera(connId);
+                    });
+                }
+
+                // Si este peer ya está expandido, refrescar el vídeo principal
+                if (expandedState && expandedState.connId === connId) {
+                    refreshExpandedVideo();
+                }
+            }
+        };
+
+        peers[connId] = { pc, username, audioEl: null, videoStream: null, screenStream: null };
+        return pc;
+    }
+
+    function destroyAllPeers() {
+        for (const [id, entry] of Object.entries(peers)) {
+            entry.pc.close();
+            if (entry.audioEl) entry.audioEl.pause();
+        }
+        Object.keys(peers).forEach(k => delete peers[k]);
+    }
+
+    // ================================================================
+    //  TILES DE PARTICIPANTES
+    // ================================================================
+
+    function addOrUpdateTile(id, username, isMe) {
+        if (document.getElementById('tile-' + id)) return;
+
+        const grid    = document.getElementById('participantsGrid');
+        const tile    = document.createElement('div');
+        const initial = (username||'?')[0].toUpperCase();
+
+        tile.className = 'peer-tile' + (isMe ? ' is-me' : '');
+        tile.id        = 'tile-' + id;
+
+        tile.innerHTML = `
+            <div class="peer-avatar-big">${esc(initial)}</div>
+            <video autoplay playsinline ${isMe ? 'muted' : ''}></video>
+            <div class="peer-name-label">${esc(username)}${isMe ? ' (Tú)' : ''}</div>
+            <div class="peer-icons">
+                ${isMe ? '<span class="peer-icon" id="icon-mic-me">🎤</span>' : ''}
+            </div>
+            <div class="peer-tile-expand-hint">
+                <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                Ampliar
+            </div>
+        `;
+
+        // Click para ampliar (solo actúa si tiene vídeo o pantalla)
+        tile.addEventListener('click', () => onTileClick(id, username));
+
+        grid.appendChild(tile);
+        updateGridLayout();
+    }
+
+    function removeTile(id) {
+        const tile = document.getElementById('tile-' + id);
+        if (tile) tile.remove();
+        updateGridLayout();
+    }
+
+    function clearParticipantsGrid() {
+        document.getElementById('participantsGrid').innerHTML = '';
+        updateGridLayout();
+    }
+
+    function updateGridLayout() {
+        const grid  = document.getElementById('participantsGrid');
+        const count = grid.children.length;
+        grid.className = 'participants-grid';
+        if (count === 1)      grid.classList.add('count-1');
+        else if (count === 2) grid.classList.add('count-2');
+        else if (count <= 4)  grid.classList.add('count-3');
+        else                  grid.classList.add('count-many');
+    }
+
+    function attachVideoToTile(connId, stream) {
+        const tile = document.getElementById('tile-' + connId);
+        if (!tile) return;
+        const video = tile.querySelector('video');
+        if (!video) return;
+        video.srcObject = stream;
+        tile.classList.add('has-video');
+        tile.querySelector('.peer-avatar-big').style.display = 'none';
+    }
+
+    function attachMyCamera(stream) {
+        const tile = document.getElementById('tile-__me__');
+        if (!tile) return;
+        const video = tile.querySelector('video');
+        if (!video) return;
+        video.srcObject = stream;
+        tile.classList.add('has-video');
+        tile.querySelector('.peer-avatar-big').style.display = 'none';
+    }
+
+    function detachMyCamera() {
+        const tile = document.getElementById('tile-__me__');
+        if (!tile) return;
+        const video = tile.querySelector('video');
+        if (video) video.srcObject = null;
+        tile.classList.remove('has-video');
+        const av = tile.querySelector('.peer-avatar-big');
+        if (av) av.style.display = '';
+
+        if (expandedState && expandedState.connId === '__me__') {
+            collapseExpandedView();
+        }
+    }
+
+    function showRemoteScreenOverlay(stream, username) {
+        const area  = document.getElementById('screenShareArea');
+        const video = document.getElementById('screenShareVideo');
+        const label = document.getElementById('screenShareLabel');
+        video.srcObject   = stream;
+        label.textContent = `Pantalla de ${username}`;
+        area.style.display = 'flex';
+    }
+
+    function hideRemoteScreenOverlay() {
+        document.getElementById('screenShareArea').style.display = 'none';
+        document.getElementById('screenShareVideo').srcObject = null;
+    }
+
+    // ================================================================
+    //  VISTA EXPANDIDA
+    // ================================================================
+
+    function onTileClick(connId, username) {
+        const tile = document.getElementById('tile-' + connId);
+        if (!tile) return;
+
+        const hasVideo  = tile.classList.contains('has-video');
+        const hasScreen = tile.classList.contains('has-screen');
+        if (!hasVideo && !hasScreen) return;
+
+        // Toggle: si ya está expandido, colapsar
+        if (expandedState && expandedState.connId === connId) {
+            collapseExpandedView();
+            return;
+        }
+
+        // Pantalla tiene prioridad sobre cámara
+        const type = hasScreen ? 'screen' : 'camera';
+        expandTile(connId, username, type);
+    }
+
+    function expandTile(connId, username, type) {
+        expandedState = { connId, type };
+
+        hideRemoteScreenOverlay();
+
+        document.getElementById('expandedView').style.display     = 'flex';
+        document.getElementById('participantsGrid').style.display = 'none';
+        document.getElementById('screenShareArea').style.display  = 'none';
+
+        refreshExpandedVideo();
+        buildExpandedSidebar();
+    }
+
+    function refreshExpandedVideo() {
+        if (!expandedState) return;
+        const { connId, type } = expandedState;
+
+        const expandedVideo = document.getElementById('expandedVideo');
+        const expandedLabel = document.getElementById('expandedLabel');
+
+        let stream   = null;
+        let labelTxt = '';
+
+        if (connId === '__me__') {
+            if (type === 'camera' && cameraStream) {
+                stream   = cameraStream;
+                labelTxt = `${ME} (Tú) — Cámara`;
+            } else if (type === 'screen' && screenStream) {
+                stream   = screenStream;
+                labelTxt = `${ME} (Tú) — Pantalla`;
+            }
+        } else {
+            const entry = peers[connId];
+            if (!entry) return;
+            if (type === 'screen' && entry.screenStream) {
+                stream   = entry.screenStream;
+                labelTxt = `${entry.username} — Pantalla`;
+            } else if (type === 'camera' && entry.videoStream) {
+                stream   = entry.videoStream;
+                labelTxt = `${entry.username} — Cámara`;
+            }
+        }
+
+        if (stream) {
+            expandedVideo.srcObject   = stream;
+            expandedLabel.textContent = labelTxt;
+        }
+    }
+
+    function buildExpandedSidebar() {
+        const sidebar = document.getElementById('expandedSidebar');
+        sidebar.innerHTML = '';
+
+        addMiniTile('__me__', ME, true);
+
+        for (const [connId, entry] of Object.entries(peers)) {
+            addMiniTile(connId, entry.username, false);
+        }
+    }
+
+    function addMiniTile(connId, username, isMe) {
+        const sidebar = document.getElementById('expandedSidebar');
+        if (document.getElementById('mini-' + connId)) return;
+
+        const div     = document.createElement('div');
+        const initial = (username||'?')[0].toUpperCase();
+        div.className = 'mini-tile';
+        div.id        = 'mini-' + connId;
+
+        if (expandedState && expandedState.connId === connId) {
+            div.classList.add('is-active-expanded');
+        }
+
+        div.innerHTML = `
+            <div class="mini-avatar">${esc(initial)}</div>
+            <div class="mini-name">${esc(username)}${isMe ? ' (Tú)' : ''}</div>
+        `;
+
+        const stream = getMiniStream(connId, isMe);
+        if (stream) {
+            const vid       = document.createElement('video');
+            vid.srcObject   = stream;
+            vid.autoplay    = true;
+            vid.playsInline = true;
+            vid.muted       = true;
+            vid.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
+            div.querySelector('.mini-avatar').style.display = 'none';
+            div.appendChild(vid);
+        }
+
+        div.addEventListener('click', () => {
+            if (connId === '__me__') {
+                const type = (cameraOn && cameraStream) ? 'camera' : null;
+                if (!type) return;
+                expandedState = { connId: '__me__', type };
+            } else {
+                const entry = peers[connId];
+                if (!entry) return;
+                const type = entry.screenStream ? 'screen' : (entry.videoStream ? 'camera' : null);
+                if (!type) return;
+                expandedState = { connId, type };
+            }
+            document.querySelectorAll('.mini-tile').forEach(m => m.classList.remove('is-active-expanded'));
+            div.classList.add('is-active-expanded');
+            refreshExpandedVideo();
+        });
+
+        sidebar.appendChild(div);
+    }
+
+    function removeMiniTile(connId) {
+        const el = document.getElementById('mini-' + connId);
+        if (el) el.remove();
+    }
+
+    function getMiniStream(connId, isMe) {
+        if (isMe) return cameraStream || screenStream || null;
+        const entry = peers[connId];
+        if (!entry) return null;
+        return entry.videoStream || entry.screenStream || null;
+    }
+
+    function collapseExpandedView() {
+        expandedState = null;
+
+        document.getElementById('expandedView').style.display      = 'none';
+        document.getElementById('participantsGrid').style.display  = '';
+        document.getElementById('expandedSidebar').innerHTML       = '';
+
+        const ev = document.getElementById('expandedVideo');
+        if (ev) ev.srcObject = null;
+
+        // Si hay pantalla remota activa, volver a mostrar overlay
+        for (const [connId, entry] of Object.entries(peers)) {
+            if (entry.screenStream) {
+                showRemoteScreenOverlay(entry.screenStream, entry.username);
+                break;
+            }
+        }
+    }
+
+    // ================================================================
+    //  PANTALLA COMPLETA
+    // ================================================================
+
+    function enterFullscreen() {
+        const container = document.getElementById('expandedMain');
+        if (!container) return;
+        try {
+            if (container.requestFullscreen)            container.requestFullscreen().catch(e => console.warn('Fullscreen:', e.message));
+            else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
+            else if (container.mozRequestFullScreen)    container.mozRequestFullScreen();
+            else if (container.msRequestFullscreen)     container.msRequestFullscreen();
+        } catch (e) { console.warn('Fullscreen no disponible:', e); }
+    }
+
+    // ================================================================
+    //  GESTIÓN: PEER DEJA CÁMARA O PANTALLA
+    // ================================================================
+
+    function onRemotePeerStopsCamera(connId) {
+        const entry = peers[connId];
+        if (!entry) return;
+        entry.videoStream = null;
+
+        const tile = document.getElementById('tile-' + connId);
+        if (tile) {
+            tile.classList.remove('has-video');
+            const video = tile.querySelector('video');
+            if (video) video.srcObject = null;
+            const av = tile.querySelector('.peer-avatar-big');
+            if (av) av.style.display = '';
+        }
+
+        if (expandedState && expandedState.connId === connId && expandedState.type === 'camera') {
+            if (entry.screenStream) {
+                expandedState.type = 'screen';
+                refreshExpandedVideo();
+                buildExpandedSidebar();
+            } else {
+                collapseExpandedView();
+            }
+        }
+
+        removeMiniTile(connId);
+        addMiniTile(connId, entry.username, false);
+    }
+
+    function onRemotePeerStopsScreen(connId) {
+        const entry = peers[connId];
+        if (!entry) return;
+        entry.screenStream = null;
+
+        const tile = document.getElementById('tile-' + connId);
+        if (tile) tile.classList.remove('has-screen');
+
+        hideRemoteScreenOverlay();
+
+        if (expandedState && expandedState.connId === connId && expandedState.type === 'screen') {
+            if (entry.videoStream) {
+                expandedState.type = 'camera';
+                refreshExpandedVideo();
+                buildExpandedSidebar();
+            } else {
+                collapseExpandedView();
+            }
+        }
+
+        removeMiniTile(connId);
+        addMiniTile(connId, entry.username, false);
+    }
+
+    // ================================================================
+    //  CONTROLES
+    // ================================================================
+
+    function updateMicBtn() {
+        const btn = document.getElementById('btnMute');
+        if (!btn) return;
+        if (micMuted) {
+            btn.classList.add('muted');
+            btn.querySelector('span').textContent = 'Silenciado';
+            const ic = document.getElementById('icon-mic-me');
+            if (ic) ic.textContent = '🔇';
+        } else {
+            btn.classList.remove('muted');
+            btn.querySelector('span').textContent = 'Micro';
+            const ic = document.getElementById('icon-mic-me');
+            if (ic) ic.textContent = '🎤';
+        }
+    }
+
+    document.getElementById('btnMute').addEventListener('click', () => {
+        const track = localStream?.getAudioTracks?.()[0];
+        if (!track) return;
+        micMuted = !micMuted;
+        track.enabled = !micMuted;
+        updateMicBtn();
+    });
+
+    document.getElementById('btnDeafen').addEventListener('click', () => {
+        deafened = !deafened;
+        const btn = document.getElementById('btnDeafen');
+        for (const entry of Object.values(peers)) {
+            if (entry.audioEl) entry.audioEl.muted = deafened;
+        }
+        if (deafened) { btn.classList.add('muted'); btn.querySelector('span').textContent = 'Ensordecido'; }
+        else          { btn.classList.remove('muted'); btn.querySelector('span').textContent = 'Sonido'; }
+    });
+
+    document.getElementById('btnHangup').addEventListener('click', async () => {
+        if (!currentGroup) return;
+        await connection.invoke('LeaveCall', currentGroup).catch(() => {});
+        stopAllMedia();
+        destroyAllPeers();
+        currentGroup = null;
+        collapseExpandedView();
+        document.querySelectorAll('.group-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('roomWrap').style.display   = 'none';
+        document.getElementById('emptyState').style.display = 'flex';
+        clearParticipantsGrid();
+    });
+
+    document.getElementById('btnCamera').addEventListener('click', async () => {
+        if (cameraOn) {
+            cameraStream?.getTracks().forEach(t => t.stop());
+            cameraStream = null;
+            cameraOn     = false;
+            detachMyCamera();
+            removeCameraFromPeers();
+            document.getElementById('btnCamera').classList.remove('active');
+            document.querySelector('#btnCamera span').textContent = 'Cámara';
+
+            if (expandedState && expandedState.connId === '__me__' && expandedState.type === 'camera') {
+                collapseExpandedView();
+            }
+        } else {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                cameraOn     = true;
+                attachMyCamera(cameraStream);
+                addCameraToPeers(cameraStream);
+                document.getElementById('btnCamera').classList.add('active');
+                document.querySelector('#btnCamera span').textContent = 'Cámara ON';
+
+                if (expandedState) {
+                    removeMiniTile('__me__');
+                    addMiniTile('__me__', ME, true);
+                }
+            } catch (e) {
+                appendSystemMsg('⚠️ No se pudo acceder a la cámara.');
+            }
+        }
+    });
+
+    document.getElementById('btnScreen').addEventListener('click', async () => {
+        if (screenSharing) {
+            screenStream?.getTracks().forEach(t => t.stop());
+            screenStream  = null;
+            screenSharing = false;
+            removeScreenFromPeers();
+            document.getElementById('screenShareArea').style.display = 'none';
+            document.getElementById('btnScreen').classList.remove('active');
+            document.querySelector('#btnScreen span').textContent = 'Pantalla';
+
+            if (expandedState && expandedState.connId === '__me__' && expandedState.type === 'screen') {
+                if (cameraOn && cameraStream) {
+                    expandedState.type = 'camera';
+                    refreshExpandedVideo();
+                } else {
+                    collapseExpandedView();
+                }
+            }
+        } else {
+            try {
+                screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+                screenSharing = true;
+
+                if (!expandedState) {
+                    const area  = document.getElementById('screenShareArea');
+                    const video = document.getElementById('screenShareVideo');
+                    video.srcObject = screenStream;
+                    document.getElementById('screenShareLabel').textContent = 'Tu pantalla compartida';
+                    area.style.display = 'flex';
+                }
+
+                addScreenToPeers(screenStream);
+                document.getElementById('btnScreen').classList.add('active');
+                document.querySelector('#btnScreen span').textContent = 'Detener';
+
+                const myTile = document.getElementById('tile-__me__');
+                if (myTile) myTile.classList.add('has-screen');
+
+                screenStream.getVideoTracks()[0].addEventListener('ended', () => {
+                    document.getElementById('btnScreen').click();
+                });
+
+                if (expandedState) {
+                    removeMiniTile('__me__');
+                    addMiniTile('__me__', ME, true);
+                }
+            } catch (e) {
+                if (e.name !== 'NotAllowedError')
+                    appendSystemMsg('⚠️ No se pudo compartir pantalla: ' + e.message);
+            }
+        }
+    });
+
+    // ================================================================
+    //  AÑADIR/QUITAR TRACKS A PEERS (renegociación)
+    // ================================================================
+
+    async function addCameraToPeers(stream) {
+        for (const [connId, entry] of Object.entries(peers)) {
+            stream.getVideoTracks().forEach(t => entry.pc.addTrack(t, stream));
+            await renegotiate(connId, entry);
+        }
+    }
+
+    function removeCameraFromPeers() {
+        for (const entry of Object.values(peers)) {
+            entry.pc.getSenders()
+                .filter(s => s.track?.kind === 'video' && !isScreenTrack(s.track))
+                .forEach(s => entry.pc.removeTrack(s));
+        }
+    }
+
+    async function addScreenToPeers(stream) {
+        for (const [connId, entry] of Object.entries(peers)) {
+            stream.getVideoTracks().forEach(t => entry.pc.addTrack(t, stream));
+            await renegotiate(connId, entry);
+        }
+    }
+
+    function removeScreenFromPeers() {
+        for (const entry of Object.values(peers)) {
+            entry.pc.getSenders()
+                .filter(s => isScreenTrack(s.track))
+                .forEach(s => entry.pc.removeTrack(s));
+        }
+    }
+
+    function isScreenTrack(track) {
+        if (!track) return false;
+        const lbl = track.label.toLowerCase();
+        return lbl.includes('screen') || lbl.includes('display') || lbl.includes('monitor');
+    }
+
+    async function renegotiate(connId, entry) {
+        try {
+            const offer = await entry.pc.createOffer();
+            await entry.pc.setLocalDescription(offer);
+            await connection.invoke('SendOffer', connId, JSON.stringify(offer));
+        } catch (e) { console.error('Renegotiate error', e); }
+    }
+
+    function stopAllMedia() {
+        localStream?.getTracks().forEach(t => t.stop());  localStream  = null;
+        cameraStream?.getTracks().forEach(t => t.stop()); cameraStream = null;
+        screenStream?.getTracks().forEach(t => t.stop()); screenStream = null;
+        cameraOn = false; screenSharing = false; micMuted = false; deafened = false;
+
+        document.getElementById('btnCamera').classList.remove('active');
+        document.querySelector('#btnCamera span').textContent = 'Cámara';
+        document.getElementById('btnScreen').classList.remove('active');
+        document.querySelector('#btnScreen span').textContent = 'Pantalla';
+        document.getElementById('screenShareArea').style.display = 'none';
+        updateMicBtn();
+    }
+
+    // ================================================================
+    //  CHAT
+    // ================================================================
+
+    function clearChat() {
+        document.getElementById('chatMessages').innerHTML = '';
+    }
+
+    function appendMessage({ user, text, time }) {
+        const box     = document.getElementById('chatMessages');
+        const row     = document.createElement('div');
+        row.className = 'msg-row';
+        const initial = (user||'?')[0].toUpperCase();
+        row.innerHTML = `
+            <div class="msg-av">${esc(initial)}</div>
+            <div class="msg-bubble">
+                <div class="msg-meta">
+                    <span class="msg-user">${esc(user)}</span>
+                    <span class="msg-time">${esc(time)}</span>
+                </div>
+                <div class="msg-text">${esc(text)}</div>
+            </div>`;
+        box.appendChild(row);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function appendSystemMsg(text) {
+        const box      = document.getElementById('chatMessages');
+        const el       = document.createElement('div');
+        el.className   = 'msg-system';
+        el.textContent = text;
+        box.appendChild(el);
+        box.scrollTop  = box.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const text  = (input.value || '').trim();
+        if (!text || !currentGroup) return;
+        try {
+            await connection.invoke('SendMessage', currentGroup, text);
+            input.value = '';
+            input.focus();
+        } catch { appendSystemMsg('❌ Error al enviar.'); }
+    }
+
+    document.getElementById('btnSend').addEventListener('click', sendMessage);
+    document.getElementById('chatInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); sendMessage(); }
+    });
+
+    // ================================================================
+    //  UTILS
+    // ================================================================
+
+    function esc(str) {
+        const d = document.createElement('div');
+        d.textContent = str ?? '';
+        return d.innerHTML;
+    }
+
+    // ================================================================
+    //  INICIO
+    // ================================================================
+
+    async function start() {
+        try {
+            await connection.start();
+            await loadGroups();
+        } catch (e) { console.error('SignalR error:', e); }
+    }
+
+    start();
+</script>

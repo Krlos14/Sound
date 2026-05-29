@@ -1,0 +1,927 @@
+﻿@page
+@model Sounds.Pages.GruposModel
+@{
+    ViewData["Title"] = "Grupos";
+}
+
+<div class="grupos-shell">
+
+    <!-- SIDEBAR IZQUIERDA -->
+    <aside class="gs-sidebar">
+        <div class="gs-sidebar-top">
+            <h1 class="gs-title">Grupos</h1>
+            <div class="gs-actions">
+                <button class="gs-btn gs-btn-primary" onclick="openModal('modalCrear')">
+                    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /></svg>
+                    Nuevo
+                </button>
+                <button class="gs-btn gs-btn-soft" onclick="openModal('modalUnirse')">
+                    <svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+                    Unirse
+                </button>
+            </div>
+        </div>
+
+        <!-- Búsqueda -->
+        <div class="gs-search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8" fill="none" /><path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+            <input type="text" id="searchInput" placeholder="Buscar grupos..." oninput="filtrarGrupos()" />
+        </div>
+
+        <!-- Lista de grupos -->
+        <div class="gs-groups-list" id="gruposLista">
+            <div class="gs-loading">Cargando grupos...</div>
+        </div>
+    </aside>
+
+    <!-- PANEL DERECHO -->
+    <main class="gs-main">
+
+        <!-- Estado vacío -->
+        <div class="gs-empty" id="gsEmpty">
+            <div class="gs-empty-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" /></svg>
+            </div>
+            <h2>Selecciona un grupo</h2>
+            <p>Elige un grupo de la izquierda para ver su chat.</p>
+        </div>
+
+        <!-- Chat activo -->
+        <div class="gs-chat-panel" id="gsChatPanel" style="display:none;">
+
+            <div class="gs-chat-header">
+                <div class="gs-chat-av" id="chatAv">?</div>
+                <div class="gs-chat-info">
+                    <div class="gs-chat-name" id="chatName">Grupo</div>
+                    <div class="gs-chat-code" id="chatCode">Código: -</div>
+                </div>
+                <button class="gs-leave-btn" id="btnSalirGrupo" title="Salir del grupo">
+                    <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" /></svg>
+                    Salir
+                </button>
+            </div>
+
+            <div class="gs-messages" id="gsMessages">
+                <div class="gs-system">Conectando al chat...</div>
+            </div>
+
+            <div class="gs-input-row">
+                <input type="text" id="gsInput" placeholder="Escribe un mensaje…" maxlength="500" autocomplete="off" />
+                <button id="gsSendBtn" type="button">
+                    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+</div>
+
+<!-- MODAL CREAR GRUPO -->
+<div id="modalCrear" class="m-overlay" style="display:none;" onclick="closeOuter(event,'modalCrear')">
+    <div class="m-box">
+        <div class="m-header"><h3>Crear grupo</h3><button class="m-close" onclick="closeModal('modalCrear')">✕</button></div>
+        <div class="m-body">
+            <div id="crearErr" class="m-error" style="display:none;"></div>
+            <div class="m-field"><label>Nombre del grupo</label><input id="crearNombre" type="text" placeholder="Ej. Equipo de producto" maxlength="80" /></div>
+            <div class="m-field" style="margin-top:14px;"><label>Código único <span class="m-hint">(sin espacios)</span></label><input id="crearCodigo" type="text" placeholder="Ej. PROD-001" maxlength="30" /></div>
+        </div>
+        <div class="m-footer">
+            <button class="gs-btn gs-btn-soft" onclick="closeModal('modalCrear')">Cancelar</button>
+            <button class="gs-btn gs-btn-primary" onclick="crearGrupo()">Crear</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL UNIRSE -->
+<div id="modalUnirse" class="m-overlay" style="display:none;" onclick="closeOuter(event,'modalUnirse')">
+    <div class="m-box">
+        <div class="m-header"><h3>Unirse con código</h3><button class="m-close" onclick="closeModal('modalUnirse')">✕</button></div>
+        <div class="m-body">
+            <div id="unirseErr" class="m-error" style="display:none;"></div>
+            <div class="m-field"><label>Código del grupo</label><input id="unirCodigo" type="text" placeholder="Ej. PROD-001" maxlength="30" /></div>
+        </div>
+        <div class="m-footer">
+            <button class="gs-btn gs-btn-soft" onclick="closeModal('modalUnirse')">Cancelar</button>
+            <button class="gs-btn gs-btn-primary" onclick="unirseGrupo()">Unirme</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary: #3B82F6;
+        --secondary: #6366F1;
+        --bg: #F8FAFC;
+        --card: #FFFFFF;
+        --text: #0F172A;
+        --text-soft: #64748B;
+        --success: #22C55E;
+        --border: #E2E8F0;
+        --shadow: 0 10px 30px rgba(15,23,42,0.06);
+        --r: 16px;
+    }
+
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Shell ocupa toda la altura disponible sin scroll */
+    .grupos-shell {
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        height: calc(100vh - 84px);
+        overflow: hidden;
+        background: var(--bg);
+    }
+
+    /* ── SIDEBAR ── */
+    .gs-sidebar {
+        display: flex;
+        flex-direction: column;
+        background: var(--card);
+        border-right: 1px solid var(--border);
+        overflow: hidden;
+    }
+
+    .gs-sidebar-top {
+        padding: 20px 18px 14px;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+
+    .gs-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 14px;
+        letter-spacing: -0.02em;
+    }
+
+    .gs-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .gs-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 0;
+        border-radius: 10px;
+        padding: 9px 13px;
+        font-weight: 700;
+        font-size: 0.84rem;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        flex: 1;
+        justify-content: center;
+    }
+
+        .gs-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .gs-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+    .gs-btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: #fff;
+        box-shadow: 0 8px 20px rgba(59,130,246,0.22);
+    }
+
+    .gs-btn-soft {
+        background: #F1F5F9;
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+    .gs-search {
+        position: relative;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+
+        .gs-search svg {
+            position: absolute;
+            left: 26px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: var(--text-soft);
+        }
+
+        .gs-search input {
+            width: 100%;
+            background: #F1F5F9;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px 10px 36px;
+            font-size: 0.88rem;
+            color: var(--text);
+            outline: none;
+            transition: 0.15s;
+        }
+
+            .gs-search input:focus {
+                border-color: rgba(59,130,246,0.4);
+                background: #fff;
+            }
+
+    .gs-groups-list {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .gs-groups-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .gs-groups-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+    .gs-loading {
+        padding: 24px;
+        text-align: center;
+        color: var(--text-soft);
+        font-size: 0.9rem;
+    }
+
+    .gs-group-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 16px;
+        cursor: pointer;
+        transition: background 0.12s;
+        border-bottom: 1px solid rgba(226,232,240,0.5);
+        user-select: none;
+    }
+
+        .gs-group-row:hover {
+            background: #F8FAFC;
+        }
+
+        .gs-group-row.active {
+            background: rgba(59,130,246,0.07);
+        }
+
+    .gs-group-av {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #fff;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .gs-group-row.active .gs-group-av {
+        box-shadow: 0 0 0 2px var(--primary);
+    }
+
+    .gs-group-info {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .gs-group-n {
+        font-weight: 700;
+        color: var(--text);
+        font-size: 0.92rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .gs-group-c {
+        color: var(--text-soft);
+        font-size: 0.76rem;
+        margin-top: 2px;
+    }
+
+    /* ── PANEL DERECHO ── */
+    .gs-main {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: var(--bg);
+    }
+
+    /* Estado vacío */
+    .gs-empty {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        color: var(--text-soft);
+        text-align: center;
+        padding: 40px;
+    }
+
+    .gs-empty-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 22px;
+        background: rgba(59,130,246,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .gs-empty-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--primary);
+        }
+
+    .gs-empty h2 {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--text);
+    }
+
+    .gs-empty p {
+        max-width: 280px;
+        line-height: 1.6;
+    }
+
+    /* Chat panel */
+    .gs-chat-panel {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+        background: var(--card);
+    }
+
+    .gs-chat-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        background: var(--card);
+        flex-shrink: 0;
+    }
+
+    .gs-chat-av {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #fff;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .gs-chat-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .gs-chat-name {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--text);
+    }
+
+    .gs-chat-code {
+        font-size: 0.78rem;
+        color: var(--text-soft);
+        margin-top: 2px;
+    }
+
+    .gs-leave-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: #FEF2F2;
+        border: 1px solid rgba(239,68,68,0.2);
+        border-radius: 10px;
+        padding: 8px 12px;
+        color: #DC2626;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.15s;
+    }
+
+        .gs-leave-btn:hover {
+            background: #FEE2E2;
+        }
+
+        .gs-leave-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+    .gs-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: linear-gradient(180deg, #F8FAFC, #FFFFFF);
+    }
+
+        .gs-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .gs-messages::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 6px;
+        }
+
+    .gs-msg-row {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+    }
+
+    .gs-msg-av {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #fff;
+        font-size: 0.78rem;
+        flex-shrink: 0;
+    }
+
+    .gs-msg-bubble {
+        max-width: 72%;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 8px 12px;
+        box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+    }
+
+    .gs-msg-meta {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+        margin-bottom: 3px;
+    }
+
+    .gs-msg-user {
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: var(--primary);
+    }
+
+    .gs-msg-time {
+        font-size: 0.72rem;
+        color: var(--text-soft);
+    }
+
+    .gs-msg-text {
+        font-size: 0.9rem;
+        color: var(--text);
+        word-break: break-word;
+        white-space: pre-wrap;
+        line-height: 1.5;
+    }
+
+    .gs-system {
+        align-self: center;
+        font-size: 0.76rem;
+        color: var(--text-soft);
+        background: rgba(255,255,255,0.9);
+        border: 1px dashed var(--border);
+        padding: 5px 12px;
+        border-radius: 999px;
+    }
+
+    .gs-input-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 12px 16px;
+        border-top: 1px solid var(--border);
+        background: var(--card);
+        flex-shrink: 0;
+    }
+
+        .gs-input-row input {
+            flex: 1;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-size: 0.9rem;
+            color: var(--text);
+            outline: none;
+            transition: 0.15s;
+            background: #F8FAFC;
+        }
+
+            .gs-input-row input:focus {
+                border-color: rgba(59,130,246,0.4);
+                background: #fff;
+            }
+
+    #gsSendBtn {
+        width: 38px;
+        height: 38px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border: none;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: 0.15s;
+        box-shadow: 0 6px 16px rgba(59,130,246,0.25);
+    }
+
+        #gsSendBtn:hover {
+            transform: scale(1.06);
+        }
+
+        #gsSendBtn svg {
+            width: 16px;
+            height: 16px;
+            fill: #fff;
+        }
+
+    /* ── MODALES ── */
+    .m-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15,23,42,0.4);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        animation: mfade 0.15s ease;
+    }
+    @@keyframes mfade {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .m-box {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 24px 60px rgba(15,23,42,0.16);
+        width: 100%;
+        max-width: 440px;
+        overflow: hidden;
+        animation: mslide 0.18s cubic-bezier(.22,1,.36,1);
+    }
+    @@keyframes mslide {
+        from {
+            transform: translateY(18px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .m-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 22px 0;
+    }
+
+        .m-header h3 {
+            font-size: 1.15rem;
+            font-weight: 800;
+        }
+
+    .m-close {
+        background: #F1F5F9;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.12s;
+    }
+
+        .m-close:hover {
+            background: #E2E8F0;
+        }
+
+    .m-body {
+        padding: 18px 22px;
+    }
+
+    .m-field {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+        .m-field label {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+    .m-hint {
+        font-weight: 400;
+        color: var(--text-soft);
+    }
+
+    .m-field input {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 13px;
+        font-size: 0.92rem;
+        color: var(--text);
+        outline: none;
+        transition: 0.15s;
+    }
+
+        .m-field input:focus {
+            border-color: rgba(59,130,246,0.5);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.09);
+        }
+
+    .m-error {
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: rgba(239,68,68,0.07);
+        border: 1px solid rgba(239,68,68,0.15);
+        color: #B91C1C;
+        font-size: 0.85rem;
+        margin-bottom: 12px;
+    }
+
+    .m-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 22px 20px;
+        border-top: 1px solid rgba(226,232,240,0.6);
+    }
+
+    @@media (max-width: 768px) {
+        .grupos-shell {
+            grid-template-columns: 1fr;
+        }
+
+        .gs-sidebar {
+            display: none;
+        }
+    }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+<script>
+    let todosGrupos = [];
+    let grupoActual = null;
+    let chatConn = null;
+
+    // ── UTILS ──
+    function esc(str) { const d = document.createElement('div'); d.textContent = str ?? ''; return d.innerHTML; }
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function closeOuter(e, id) { if (e.target.id === id) closeModal(id); }
+    function showErr(id, msg) { const el = document.getElementById(id); el.textContent = msg; el.style.display = 'block'; }
+    function hideErr(id) { document.getElementById(id).style.display = 'none'; }
+
+    // ── CARGAR GRUPOS ──
+    async function cargarGrupos() {
+        try {
+            const res = await fetch('/api/grupos');
+            if (!res.ok) return;
+            todosGrupos = await res.json();
+            renderGrupos(todosGrupos);
+        } catch {}
+    }
+
+    function renderGrupos(lista) {
+        const el = document.getElementById('gruposLista');
+        if (!lista.length) {
+            el.innerHTML = '<div class="gs-loading">No tienes grupos. Crea uno o únete con un código.</div>';
+            return;
+        }
+        el.innerHTML = lista.map(g => `
+            <div class="gs-group-row ${grupoActual?.code === g.code ? 'active' : ''}"
+                 data-code="${esc(g.code)}" data-name="${esc(g.name)}" data-id="${g.id}"
+                 onclick="abrirChat(this)">
+                <div class="gs-group-av">${(g.name||'G')[0].toUpperCase()}</div>
+                <div class="gs-group-info">
+                    <div class="gs-group-n">${esc(g.name)}</div>
+                    <div class="gs-group-c">Código: ${esc(g.code)}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function filtrarGrupos() {
+        const q = document.getElementById('searchInput').value.toLowerCase().trim();
+        if (!q) { renderGrupos(todosGrupos); return; }
+        renderGrupos(todosGrupos.filter(g =>
+            g.name.toLowerCase().includes(q) || g.code.toLowerCase().includes(q)
+        ));
+    }
+
+    // ── ABRIR CHAT ──
+    async function abrirChat(el) {
+        const code = el.dataset.code;
+        const name = el.dataset.name;
+
+        if (grupoActual?.code === code) return;
+
+        // Desactivar anterior
+        document.querySelectorAll('.gs-group-row').forEach(r => r.classList.remove('active'));
+        el.classList.add('active');
+
+        // Desconectar anterior si hay
+        if (chatConn && grupoActual) {
+            await chatConn.invoke('LeaveCall', grupoActual.code).catch(() => {});
+        }
+
+        grupoActual = { code, name };
+
+        // Mostrar panel
+        document.getElementById('gsEmpty').style.display = 'none';
+        document.getElementById('gsChatPanel').style.display = 'flex';
+        document.getElementById('chatAv').textContent = (name||'G')[0].toUpperCase();
+        document.getElementById('chatName').textContent = name;
+        document.getElementById('chatCode').textContent = 'Código: ' + code;
+        document.getElementById('gsMessages').innerHTML = '<div class="gs-system">Conectando...</div>';
+
+        // Conectar SignalR si no está conectado
+        if (!chatConn || chatConn.state === 'Disconnected') {
+            chatConn = new signalR.HubConnectionBuilder()
+                .withUrl('/callhub')
+                .withAutomaticReconnect()
+                .build();
+
+            chatConn.on('ReceiveMessage', appendMsg);
+        }
+
+        if (chatConn.state !== 'Connected') {
+            await chatConn.start().catch(console.error);
+        }
+
+        await chatConn.invoke('JoinCall', code).catch(() => {});
+
+        // Cargar historial
+        const history = await chatConn.invoke('GetChatHistory', code, 50).catch(() => []);
+        document.getElementById('gsMessages').innerHTML = '';
+        history.forEach(m => appendMsg(m));
+        if (!history.length) {
+            document.getElementById('gsMessages').innerHTML =
+                '<div class="gs-system">Sé el primero en escribir...</div>';
+        }
+
+        document.getElementById('gsInput').focus();
+    }
+
+    function appendMsg({ user, text, time }) {
+        const box = document.getElementById('gsMessages');
+        // Quitar el placeholder si existe
+        const sys = box.querySelector('.gs-system');
+        if (sys) sys.remove();
+
+        const row = document.createElement('div');
+        row.className = 'gs-msg-row';
+        row.innerHTML = `
+            <div class="gs-msg-av">${esc((user||'?')[0].toUpperCase())}</div>
+            <div class="gs-msg-bubble">
+                <div class="gs-msg-meta">
+                    <span class="gs-msg-user">${esc(user)}</span>
+                    <span class="gs-msg-time">${esc(time)}</span>
+                </div>
+                <div class="gs-msg-text">${esc(text)}</div>
+            </div>`;
+        box.appendChild(row);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    async function enviarMensaje() {
+        const input = document.getElementById('gsInput');
+        const text = (input.value || '').trim();
+        if (!text || !grupoActual || !chatConn) return;
+        try {
+            await chatConn.invoke('SendMessage', grupoActual.code, text);
+            input.value = '';
+            input.focus();
+        } catch {}
+    }
+
+    document.getElementById('gsSendBtn').addEventListener('click', enviarMensaje);
+    document.getElementById('gsInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); enviarMensaje(); }
+    });
+
+    // ── SALIR DE GRUPO ──
+    document.getElementById('btnSalirGrupo').addEventListener('click', async () => {
+        if (!grupoActual) return;
+        if (!confirm(`¿Salir del grupo "${grupoActual.name}"?`)) return;
+
+        const g = todosGrupos.find(x => x.code === grupoActual.code);
+        if (g) {
+            await fetch('/api/grupos/salir', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_grupo: g.id })
+            });
+        }
+
+        if (chatConn && grupoActual) {
+            await chatConn.invoke('LeaveCall', grupoActual.code).catch(() => {});
+        }
+
+        grupoActual = null;
+        document.getElementById('gsChatPanel').style.display = 'none';
+        document.getElementById('gsEmpty').style.display = 'flex';
+        await cargarGrupos();
+    });
+
+    // ── CREAR GRUPO ──
+    async function crearGrupo() {
+        hideErr('crearErr');
+        const nombre = document.getElementById('crearNombre').value.trim();
+        const codigo = document.getElementById('crearCodigo').value.trim();
+        if (!nombre) { showErr('crearErr', 'El nombre es obligatorio.'); return; }
+        if (!codigo || /\s/.test(codigo)) { showErr('crearErr', 'El código no puede estar vacío ni tener espacios.'); return; }
+
+        const res = await fetch('/api/grupos/crear', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: nombre, code: codigo })
+        });
+        const d = await res.json();
+        if (!res.ok) { showErr('crearErr', d.error || 'Error al crear.'); return; }
+
+        document.getElementById('crearNombre').value = '';
+        document.getElementById('crearCodigo').value = '';
+        closeModal('modalCrear');
+        await cargarGrupos();
+    }
+
+    // ── UNIRSE ──
+    async function unirseGrupo() {
+        hideErr('unirseErr');
+        const codigo = document.getElementById('unirCodigo').value.trim();
+        if (!codigo) { showErr('unirseErr', 'Introduce el código.'); return; }
+
+        const res = await fetch('/api/grupos/unirse', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: codigo })
+        });
+        const d = await res.json();
+        if (!res.ok) { showErr('unirseErr', d.error || 'No encontrado.'); return; }
+
+        document.getElementById('unirCodigo').value = '';
+        closeModal('modalUnirse');
+        await cargarGrupos();
+    }
+
+    // ── INICIO ──
+    cargarGrupos();
+</script>
